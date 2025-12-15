@@ -1,0 +1,5 @@
+{
+  "name": "ProInvoice Builder",
+  "description": "A professional, responsive invoice generation tool featuring real-time calculations, client management, and PDF-ready layouts.",
+  "requestFramePermissions": []
+}
