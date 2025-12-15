@@ -2,10 +2,19 @@ import React, { useState, useRef, useEffect } from 'react';
 import { User, LogOut } from 'lucide-react';
 import { InvoiceForm } from './components/InvoiceForm';
 import { InvoiceList } from './components/InvoiceList';
+import { Login } from './components/Login';
 
 type ViewState = 'list' | 'form';
 
+// Event bus for 401 handling
+export const UNAUTHORIZED_EVENT = 'auth:unauthorized';
+
 const App: React.FC = () => {
+  const [token, setToken] = useState<string | null>(localStorage.getItem('auth_token'));
+  const [user, setUser] = useState<any>(
+    localStorage.getItem('auth_user') ? JSON.parse(localStorage.getItem('auth_user')!) : null
+  );
+  
   const [currentView, setCurrentView] = useState<ViewState>('list');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -24,6 +33,41 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // Handle Logout Logic
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+    setToken(null);
+    setUser(null);
+    setCurrentView('list');
+    setIsDropdownOpen(false);
+  };
+
+  // Listen for global unauthorized events (401)
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      handleLogout();
+    };
+
+    window.addEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
+    return () => {
+      window.removeEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
+    };
+  }, []);
+
+  const handleLoginSuccess = (newToken: string, userData: any) => {
+    localStorage.setItem('auth_token', newToken);
+    localStorage.setItem('auth_user', JSON.stringify(userData));
+    setToken(newToken);
+    setUser(userData);
+  };
+
+  // Public Route: Login
+  if (!token) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // Private Routes: App
   return (
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
@@ -45,15 +89,19 @@ const App: React.FC = () => {
                   aria-label="User menu"
                 >
                   <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden group-hover:ring-2 group-hover:ring-blue-100 transition-all">
-                     <img src="https://picsum.photos/100/100" alt="User" className="w-full h-full object-cover" />
+                     <img 
+                       src={user?.avatar || "https://picsum.photos/100/100"} 
+                       alt="User" 
+                       className="w-full h-full object-cover" 
+                     />
                   </div>
                 </button>
 
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 animate-in fade-in zoom-in-95 duration-100 origin-top-right z-50">
                     <div className="px-4 py-3 border-b border-gray-100 mb-1">
-                      <p className="text-sm font-medium text-gray-900">John Doe</p>
-                      <p className="text-xs text-gray-500 truncate">john.doe@example.com</p>
+                      <p className="text-sm font-medium text-gray-900">{user?.name || 'User'}</p>
+                      <p className="text-xs text-gray-500 truncate" title={user?.email}>{user?.email || 'user@example.com'}</p>
                     </div>
                     
                     <button 
@@ -65,10 +113,7 @@ const App: React.FC = () => {
                     </button>
                     
                     <button 
-                      onClick={() => {
-                        setIsDropdownOpen(false);
-                        alert("Logging out...");
-                      }}
+                      onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
                     >
                       <LogOut className="w-4 h-4" /> 
