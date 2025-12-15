@@ -34,6 +34,7 @@ export interface InvoiceState {
   dueDate: string; // YYYY-MM-DD
   paymentTerms: PaymentTerms;
   customPaymentTerms: string;
+  status: 'draft' | 'pending' | 'paid' | 'overdue';
 
   // Items
   items: LineItem[];

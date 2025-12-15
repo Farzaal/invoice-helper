@@ -24,6 +24,7 @@ const INITIAL_STATE: InvoiceState = {
   dueDate: '',
   paymentTerms: PaymentTerms.Net30,
   customPaymentTerms: '',
+  status: 'draft',
   items: [
     { id: generateId(), description: '', quantity: 1, unitPrice: 0 }
   ],
@@ -33,7 +34,7 @@ const INITIAL_STATE: InvoiceState = {
   terms: ''
 };
 
-export const InvoiceForm: React.FC = () => {
+export const InvoiceForm: React.FC<{ onCancel?: () => void }> = ({ onCancel }) => {
   const [formData, setFormData] = useState<InvoiceState>(INITIAL_STATE);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -617,10 +618,10 @@ export const InvoiceForm: React.FC = () => {
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 md:static md:bg-transparent md:border-0 md:p-0 z-50">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-end items-center gap-4">
           <button 
-             onClick={() => setFormData(INITIAL_STATE)}
+             onClick={() => onCancel ? onCancel() : setFormData(INITIAL_STATE)}
              className="text-gray-500 hover:text-red-500 text-sm font-medium px-4 hidden md:block"
           >
-            Clear Form
+            Cancel
           </button>
           
           <div className="flex w-full md:w-auto gap-3">

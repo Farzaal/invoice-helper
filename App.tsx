@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, LogOut } from 'lucide-react';
 import { InvoiceForm } from './components/InvoiceForm';
+import { InvoiceList } from './components/InvoiceList';
+
+type ViewState = 'list' | 'form';
 
 const App: React.FC = () => {
+  const [currentView, setCurrentView] = useState<ViewState>('list');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -25,7 +29,7 @@ const App: React.FC = () => {
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentView('list')}>
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
                 P
               </div>
@@ -79,7 +83,11 @@ const App: React.FC = () => {
       </nav>
       
       <main className="py-8">
-        <InvoiceForm />
+        {currentView === 'list' ? (
+          <InvoiceList onCreateNew={() => setCurrentView('form')} />
+        ) : (
+          <InvoiceForm onCancel={() => setCurrentView('list')} />
+        )}
       </main>
     </div>
   );
